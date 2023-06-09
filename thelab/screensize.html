@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Screen Size Calc</title>
+<meta name="viewport" content="width=550, initial-scale=1.0, user-scalable=yes">
+</head>
+<body>
+<div class="content">
+	<h1>Screen Size Calculator</h1>
+	<div id="form">
+		<form>
+			<div class="subform">
+				<fieldset>
+					<div class="table">
+						<div class="table-row">
+							<div class="table-col"><label for="aspectRatioWidth">Aspect ratio</label></div>
+							<div class="table-col"><input type="number" id="aspectRatioWidth" name="aspectRatioWidth" class="inputValue" value="16"> : <input type="number" id="aspectRatioHeight" name="aspectRatioHeight" class="inputValue" value="9"></div>
+						</div>
+						<div class="table-row">
+							<div class="table-col"></div>
+							<div class="table-col">
+								Predefined formats:<br>
+								<ul class="formValueList">
+									<li><a onclick="setAspectRatio(3840,2160)">4K Ultra HD (3840&times;2160) <span class="arbox ar177">16:9</span></a></li>
+									<li><a onclick="setAspectRatio(1920,1080)">Full HD (1920&times;1080) <span class="arbox ar177">16:9</span></a></li>
+									<li><a onclick="setAspectRatio(1280,720)">HD-Ready (1280&times;720) <span class="arbox ar177">16:9</span></a></li>
+									<li><a onclick="setAspectRatio(1920,1200)">WUXGA (1920&times;1200) <span class="arbox ar239">16:10</span></a></li>
+									<li><a onclick="setAspectRatio(3440,1440)">UWQHD (3440&times;1440) <span class="arbox ar239">21:9</span></a></li>
+									<li><a onclick="setAspectRatio(239,100)">Anamorphic <span class="arbox ar239">2.39:1</span></a></li>
+									<li><a onclick="setAspectRatio(4,3)">NTSC/PAL <span class="arbox ar133">4:3</span></a></li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</fieldset>
+			</div>
+			<div class="subform">
+				<fieldset>
+					<p>Enter the measurement that you know (diagonal, width or height) and the other two will be calculated.</p>
+					<div class="table">
+						<div class="table-row">
+							<div class="table-col"><label for="diagonalCm">Diagonal</label></div>
+							<div class="table-col">
+								<input type="number" step="0.1" id="diagonalCm" name="diagonalCm" data-key="d" data-unit="cm" class="inputValue"> cm
+								/ <input type="number" step="0.1" id="diagonalIn" name="diagonalIn" data-key="d" data-unit="in" class="inputValue"> inches
+							</div>
+							<div class="table-col">
+								<button onclick="calculate('d')" type="button">Calculate</button>
+							</div>
+						</div>
+						<div class="table-row">
+							<div class="table-col"><label for="widthCm">Width</label></div>
+							<div class="table-col">
+								<input type="number" step="0.1" id="widthCm" name="widthCm" data-key="w" data-unit="cm" class="inputValue"> cm
+								/ <input type="number" step="0.1" id="widthIn" name="widthIn" data-key="w" data-unit="in" class="inputValue"> inches
+							</div>
+							<div class="table-col">
+								<button onclick="calculate('w')" type="button">Calculate</button>
+							</div>
+						</div>
+						<div class="table-row">
+							<div class="table-col"><label for="heightCm">Height</label></div>
+							<div class="table-col">
+								<input type="number" step="0.1" id="heightCm" name="heightCm" data-key="h" data-unit="cm" class="inputValue"> cm
+								/ <input type="number" step="0.1" id="heightIn" name="heightIn" data-key="h" data-unit="in" class="inputValue"> inches
+							</div>
+							<div class="table-col">
+								<button onclick="calculate('h')" type="button">Calculate</button>
+							</div>
+						</div>
+					</div>
+				</fieldset>
+			</div>
+		</form>
+	</div>
+</div>
+<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+<script>
+	var UNITS = ["cm", "in"];
+	var currentKey = null;
+	function findInput(key, unit) {
+		return $("*[data-key="+key+"]").filter("*[data-unit="+unit+"]");
+	}
+	function setAspectRatio(width, height) {
+		$("#aspectRatioWidth").val(width);
+		$("#aspectRatioHeight").val(height);
+		calculate(currentKey);
+	}
+	function cmToInch(value) {
+		return value / 2.54;
+	}
+	function inchToCm(value) {
+		return value * 2.54;
+	}
+	function calculateDiagonal(width, height) {
+		return Math.sqrt(Math.pow(width, 2) + Math.pow(height, 2));
+	}
+	function transformUnits(key, unit, value) {
+		var element, transfomredValue;
+		if (unit === "cm") {
+			element = findInput(key, "in");
+			transfomredValue = cmToInch(value);
+		} else if (unit === "in") {
+			element = findInput(key, "cm");
+			transfomredValue = inchToCm(value);
+		}
+		element.data("exactValue", transfomredValue);
+		element.val(transfomredValue.toFixed(1));
+	}
+	function calculate(key) {
+		switch (key) {
+			case "d":
+				calculateByDiagonal();
+				break;
+			case "w":
+				calculateByWidth();
+				break;
+			case "h":
+				calculateByHeight();
+				break;
+		}
+	}
+	function calculateByDiagonal() {
+		var aspectRatioWidth = $("#aspectRatioWidth").val();
+		var aspectRatioHeight = $("#aspectRatioHeight").val();
+		var aspectRatioDiagonal = calculateDiagonal(aspectRatioWidth, aspectRatioHeight);
+		for (var i in UNITS) {
+			var unit = UNITS[i];
+			var inputElement = findInput("d", unit);
+			var diagonal = inputElement.data("exactValue") || inputElement.val();
+			if (diagonal > 0) {
+				var factor = diagonal / aspectRatioDiagonal;
+				var width = aspectRatioWidth * factor;
+				var height = aspectRatioHeight * factor;
+				findInput("w", unit).val(width.toFixed(1)).data("exactValue", width);
+				findInput("h", unit).val(height.toFixed(1)).data("exactValue", height);
+			}
+		}
+	}
+	function calculateByWidth() {
+		var aspectRatioWidth = $("#aspectRatioWidth").val();
+		var aspectRatioHeight = $("#aspectRatioHeight").val();
+		var aspectRatioDiagonal = calculateDiagonal(aspectRatioWidth, aspectRatioHeight);
+		for (var i in UNITS) {
+			var unit = UNITS[i];
+			var inputElement = findInput("w", unit);
+			var width = inputElement.data("exactValue") || inputElement.val();
+			if (width > 0) {
+				var factor = width / aspectRatioWidth;
+				var diagonal = aspectRatioDiagonal * factor;
+				var height = aspectRatioHeight * factor;
+				findInput("d", unit).val(diagonal.toFixed(1)).data("exactValue", diagonal);
+				findInput("h", unit).val(height.toFixed(1)).data("exactValue", height);
+			}
+		}
+	}
+	function calculateByHeight() {
+		var aspectRatioWidth = $("#aspectRatioWidth").val();
+		var aspectRatioHeight = $("#aspectRatioHeight").val();
+		var aspectRatioDiagonal = calculateDiagonal(aspectRatioWidth, aspectRatioHeight);
+		for (var i in UNITS) {
+			var unit = UNITS[i];
+			var inputElement = findInput("h", unit);
+			var height = inputElement.data("exactValue") || inputElement.val();
+			if (height > 0) {
+				var factor = height / aspectRatioHeight;
+				var diagonal = aspectRatioDiagonal * factor;
+				var width = aspectRatioWidth * factor;
+				findInput("d", unit).val(diagonal.toFixed(1)).data("exactValue", diagonal);
+				findInput("w", unit).val(width.toFixed(1)).data("exactValue", width);
+			}
+		}
+	}
+	$(".inputValue").change(function(event) {
+		var element = $(event.target);
+		var key = element.attr("data-key");
+		var unit = element.attr("data-unit");
+		var value = element.val();
+		if (key) {
+			currentKey = key;
+			element.data("exactValue", value);
+			transformUnits(key, unit, value);
+		}
+		calculate(currentKey);
+	});
+</script>
+</body>
+</html>
