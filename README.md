@@ -2,7 +2,8 @@
 
 This repository serves as the basis for WIM's _work-in-progress_ websites:
 
-- subdomain is [dev.wim.ae](https://dev.wim.ae/)
+- base domain is [dev.wim.ae](https://dev.wim.ae/)
 - create a new repository
-- set repo's **pages** domain to https://wimllc.github.io/devsite/
+- push static website to `gh-pages` branch
+- set repo's **pages** to deploy `gh-pages` `/(root)
 - site address: https://dev.wim.ae/repo_name/
